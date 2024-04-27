@@ -1,8 +1,8 @@
 #!/bin/bash
 OUTPUT_DIR="output"
-ROOTFS_FILE="rootfs.tar.gz"
+ROOTFS_FILE="rootfs-alpine.tar.gz"
 
-ROOTFS_WORKSPACE_NAME="alpine-rootfs"
+ROOTFS_WORKSPACE_NAME="rootfs-alpine"
 ROOTFS_WORKSPACE_FILE="$ROOTFS_WORKSPACE_NAME.ext4"
 ROOTFS_WORKSPACE_MNT="/tmp/$ROOTFS_WORKSPACE_NAME/"
 
