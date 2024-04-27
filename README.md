@@ -14,6 +14,13 @@ apt install -y git ssh make gcc gcc-multilib g++-multilib \
 apt install docker.io
 ```
 
+## Build
+
+```bash
+git clone https://github.com/soyflourbread/luckfox-pico.git
+```
+
 ```bash
 cd ./tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/
+source env_install_toolchain.sh
 ```

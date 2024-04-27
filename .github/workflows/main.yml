@@ -17,3 +17,12 @@ jobs:
         with:
           name: rootfs-alpine
           path: output/rootfs-alpine.tar.gz
+  build-system:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: build system
+        run: ln -s
