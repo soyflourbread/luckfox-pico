@@ -53,7 +53,8 @@ overlay() {
   echo "Include /etc/ssh/sshd_config.d/*.conf" >> \
     "$ROOTFS_WORKSPACE_MNT/etc/ssh/sshd_config"
 
-  ln -s "/etc/init.d/sshd" "$ROOTFS_WORKSPACE_MNT/etc/runlevels/default/sshd"
+  ln -s "/etc/init.d/usb_gadget" \
+    "$ROOTFS_WORKSPACE_MNT/etc/runlevels/default/usb_gadget"
 }
 
 overlay
