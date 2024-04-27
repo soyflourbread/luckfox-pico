@@ -18,6 +18,9 @@ jobs:
           name: rootfs-alpine
           path: output/rootfs-alpine.tar.gz
   build-system:
+    strategy:
+      matrix:
+        device: [ pico-mini-b, pico-plus, pico-pro-max ]
     runs-on: ubuntu-latest
     needs: build-rootfs
     steps:
@@ -38,9 +41,9 @@ jobs:
           python-is-python3 passwd openssl openssh-server \
           openssh-client vim file cpio rsync"
       - name: build system
-        run: ./system.sh
+        run: ./system.sh -f alpine-rootfs.tar.gz -d ${{ matrix.device }}
       - name: upload update.img
         uses: actions/upload-artifact@v4
         with:
           name: update-img
-          path: output/update.img
+          path: output/${{ matrix.device }}-sysupgrade.img
