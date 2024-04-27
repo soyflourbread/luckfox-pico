@@ -17,7 +17,7 @@ apt install docker.io
 ## Build
 
 ```bash
-git clone https://github.com/soyflourbread/luckfox-pico.git
+git clone --recursive https://github.com/soyflourbread/luckfox-pico.git
 ```
 
 ```bash

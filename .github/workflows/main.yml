@@ -8,7 +8,7 @@ jobs:
   build-rootfs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: checkout
         uses: actions/checkout@v4
       - name: build rootfs
         run: sudo ./rootfs.sh
@@ -19,10 +19,20 @@ jobs:
           path: output/rootfs-alpine.tar.gz
   build-system:
     runs-on: ubuntu-latest
+    needs: build-rootfs
     steps:
-      - name: Checkout
+      - name: checkout
         uses: actions/checkout@v4
         with:
           submodules: "recursive"
+      - name: download rootfs
+        uses: actions/download-artifact@v4
+        with:
+          name: rootfs-alpine
       - name: build system
-        run: ln -s
+        run: ./system.sh
+      - name: upload update.img
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-img
+          path: output/update.img
