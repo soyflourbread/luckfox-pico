@@ -21,6 +21,7 @@ rc-update add sshd default
 
 # Extra stuff
 apk add bottom
+apk add neofetch
 
 # Clear apk cache
 rm -rf /var/cache/apk/*

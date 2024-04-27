@@ -12,10 +12,8 @@ jobs:
         uses: actions/checkout@v4
       - name: build rootfs
         run: sudo ./rootfs.sh
-      - name: rename rootfs file
-        run: sudo mv output/rootfs-alpine.tar.gz output/rootfs-alpine
       - name: upload rootfs
         uses: actions/upload-artifact@v4
         with:
-          name: rootfs
-          path: output/rootfs-alpine
+          name: rootfs-alpine
+          path: output/rootfs-alpine.tar.gz
