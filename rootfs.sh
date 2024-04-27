@@ -1,4 +1,5 @@
 #!/bin/bash
+OUTPUT_DIR="output"
 ROOTFS_FILE="rootfs.tar.gz"
 
 ROOTFS_WORKSPACE_NAME="alpine-rootfs"
@@ -61,7 +62,9 @@ tar czf "$ROOTFS_FILE" ./*
 popd || exit
 
 rm -rf "$ROOTFS_FILE"
-mv "$ROOTFS_WORKSPACE_MNT/$ROOTFS_FILE" .
+rm -rf "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
+mv "$ROOTFS_WORKSPACE_MNT/$ROOTFS_FILE" "$OUTPUT_DIR/"
 
 # Cleanup
 rootfs_workspace_drop
