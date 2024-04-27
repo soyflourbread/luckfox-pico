@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ROOTFS_NAME="rootfs-alpine.tar.gz"
-DEVICE_NAME="pico-mini"
+DEVICE_NAME="pico-mini-b"
 
-while getopts ":f:d" opt; do
+while getopts ":f:d:" opt; do
   case ${opt} in
     f) ROOTFS_NAME="${OPTARG}" ;;
     d) DEVICE_NAME="${OPTARG}" ;;
