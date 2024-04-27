@@ -30,7 +30,7 @@ jobs:
         with:
           name: rootfs-alpine
       - name: install deps
-        run: "apt install -y \
+        run: "sudo apt install -y \
           git ssh make gcc gcc-multilib g++-multilib \
           module-assistant expect g++ gawk texinfo libssl-dev \
           bison flex fakeroot cmake unzip gperf autoconf \
