@@ -45,5 +45,5 @@ jobs:
       - name: upload update.img
         uses: actions/upload-artifact@v4
         with:
-          name: update-img
+          name: {{ matrix.device }}-sysupgrade
           path: output/${{ matrix.device }}-sysupgrade.img
