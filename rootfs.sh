@@ -6,7 +6,7 @@ ROOTFS_MNT="/tmp/$ROOTFS_NAME/"
 # Create and mount rootfs
 umount -R "$ROOTFS_MNT"
 rm -rf "$ROOTFS_FILE" "$ROOTFS_MNT"
-mkdir -R "$ROOTFS_MNT"
+mkdir -P "$ROOTFS_MNT"
 dd if=/dev/zero of="$ROOTFS_FILE" bs=1M count=100
 mkfs.ext4 "$ROOTFS_FILE"
 mount "$ROOTFS_FILE" "$ROOTFS_MNT"
@@ -15,6 +15,7 @@ mount "$ROOTFS_FILE" "$ROOTFS_MNT"
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 # Create docker
+docker container rm -f armv7alpine
 docker run -it \
     --name armv7alpine \
     --net host \
