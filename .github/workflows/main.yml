@@ -41,7 +41,7 @@ jobs:
           python-is-python3 passwd openssl openssh-server \
           openssh-client vim file cpio rsync"
       - name: build system
-        run: ./system.sh -f alpine-rootfs.tar.gz -d ${{ matrix.device }}
+        run: ./system.sh -f rootfs-alpine.tar.gz -d ${{ matrix.device }}
       - name: upload update.img
         uses: actions/upload-artifact@v4
         with:
