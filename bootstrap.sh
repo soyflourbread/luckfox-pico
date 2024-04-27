@@ -19,3 +19,6 @@ apk add bottom
 # Clear apk cache
 rm -rf /var/cache/apk/*
 
+# Packaging rootfs
+for d in bin etc lib root sbin usr; do tar c "$d" | tar x -C /extrootfs; done
+for dir in dev proc run sys var; do mkdir /extrootfs/${dir}; done
