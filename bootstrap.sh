@@ -9,6 +9,9 @@ rc-update add sysfs boot
 rc-update add networking default
 rc-update add local default
 
+# Install TTY
+apk add agetty
+
 # Setting up shell
 apk add shadow
 apk add bash bash-completion
