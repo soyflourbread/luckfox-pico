@@ -9,6 +9,12 @@ rc-update add sysfs boot
 rc-update add networking default
 rc-update add local default
 
+# Setting up shell
+apk add shadow
+apk add bash bash-completion
+chsh -s /bin/bash
+apk del -r shadow
+
 # Install SSH
 apk add openssh
 rc-update add sshd default
@@ -20,5 +26,5 @@ apk add bottom
 rm -rf /var/cache/apk/*
 
 # Packaging rootfs
-for d in bin etc lib root sbin usr; do tar c "$d" | tar x -C /extrootfs; done
-for dir in dev proc run sys var; do mkdir /extrootfs/${dir}; done
+for d in bin etc lib sbin usr; do tar c "$d" | tar x -C /extrootfs; done
+for dir in dev proc root run sys var; do mkdir /extrootfs/${dir}; done

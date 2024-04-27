@@ -1,15 +1,17 @@
 #!/bin/bash
-ROOTFS_NAME="alpine-rootfs"
-ROOTFS_FILE="$ROOTFS_NAME.ext4"
-ROOTFS_MNT="/tmp/$ROOTFS_NAME/"
+ROOTFS_FILE="rootfs.tar.gz"
+
+ROOTFS_WORKSPACE_NAME="alpine-rootfs"
+ROOTFS_WORKSPACE_FILE="$ROOTFS_WORKSPACE_NAME.ext4"
+ROOTFS_WORKSPACE_MNT="/tmp/$ROOTFS_WORKSPACE_NAME/"
 
 # Create and mount rootfs
-umount -R "$ROOTFS_MNT"
-rm -rf "$ROOTFS_FILE" "$ROOTFS_MNT"
-mkdir -p "$ROOTFS_MNT"
-dd if=/dev/zero of="$ROOTFS_FILE" bs=1M count=100
-mkfs.ext4 "$ROOTFS_FILE"
-mount "$ROOTFS_FILE" "$ROOTFS_MNT"
+umount -R "$ROOTFS_WORKSPACE_MNT"
+rm -rf "$ROOTFS_WORKSPACE_FILE" "$ROOTFS_WORKSPACE_MNT"
+mkdir -p "$ROOTFS_WORKSPACE_MNT"
+dd if=/dev/zero of="$ROOTFS_WORKSPACE_FILE" bs=1M count=100
+mkfs.ext4 "$ROOTFS_WORKSPACE_FILE"
+mount "$ROOTFS_WORKSPACE_FILE" "$ROOTFS_WORKSPACE_MNT"
 
 # Setting up multiarch support
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
@@ -20,9 +22,32 @@ docker run -it \
     --name armv7alpine \
     --net host \
     --mount type=bind,source=./bootstrap.sh,target=/bootstrap.sh \
-    -v "$ROOTFS_MNT:/extrootfs" \
+    -v "$ROOTFS_WORKSPACE_MNT:/extrootfs" \
     arm32v7/alpine \
     /bootstrap.sh
 
-# Cleanup
+# Configuring rootfs and overlay
+OVERLAY_WORKSPACE="overlay-workspace"
+rm -rf "$OVERLAY_WORKSPACE"
+cp -R overlay "$OVERLAY_WORKSPACE"
 
+HOSTNAME="luckfox"
+sed -i -e "s/{HOSTNAME}/$HOSTNAME/g" "$OVERLAY_WORKSPACE/etc/hostname"
+
+TTY_PORT="ttyFIQ0"
+sed -i -e "s/{TTY_PORT}/$TTY_PORT/g" "$OVERLAY_WORKSPACE/etc/securetty"
+sed -i -e "s/{TTY_PORT}/$TTY_PORT/g" "$OVERLAY_WORKSPACE/etc/inittab"
+
+rsync -a "$OVERLAY_WORKSPACE/" "$ROOTFS_WORKSPACE_MNT/"
+rm -rf "$OVERLAY_WORKSPACE"
+
+echo "Include /etc/ssh/sshd_config.d/*.conf" >> "$ROOTFS_WORKSPACE_MNT/etc/ssh/sshd_config"
+
+# Packaging
+pushd "$ROOTFS_WORKSPACE_MNT" || exit
+tar czf "$ROOTFS_FILE" ./*
+popd || exit
+
+mv "$ROOTFS_WORKSPACE_MNT/$ROOTFS_FILE" .
+
+# Cleanup
