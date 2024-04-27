@@ -17,5 +17,5 @@ jobs:
       - name: upload rootfs
         uses: actions/upload-artifact@v4
         with:
-          name: rootfs-alpine
-          path: output/rootfs-alpine.tar.gz
+          name: rootfs
+          path: output
