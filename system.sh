@@ -43,7 +43,7 @@ echo "export RK_CUSTOM_ROOTFS=../sysdrv/custom_rootfs/$ROOTFS_NAME" >> .BoardCon
 ./build.sh uboot
 ./build.sh kernel
 ./build.sh env
-./build.sh app
+#./build.sh app
 # package firmware
 ./build.sh firmware
 ./build.sh save
