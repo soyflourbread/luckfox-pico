@@ -26,7 +26,7 @@ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 # Create docker
 docker container rm -f armv7alpine
-docker run -it \
+docker run \
     --name armv7alpine \
     --net host \
     --mount type=bind,source=./bootstrap.sh,target=/bootstrap.sh \
