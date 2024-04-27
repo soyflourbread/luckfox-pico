@@ -3,10 +3,11 @@
 BOARDCONFIG="BoardConfig-SPI_NAND-Buildroot-RV1103_Luckfox_Pico_Mini_B-IPC.mk"
 ROOTFS_NAME="rootfs-alpine.tar.gz"
 
-pushd sdk || exit
+rm -rf sdk/sysdrv/custom_rootfs/
+mkdir -p sdk/sysdrv/custom_rootfs/
+cp "$ROOTFS_NAME" sdk/sysdrv/custom_rootfs/
 
-rm -rf sysdrv/custom_rootfs
-mkdir -p sysdrv/custom_rootfs
+pushd sdk || exit
 
 pushd tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/ || exit
 source env_install_toolchain.sh
