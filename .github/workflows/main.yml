@@ -32,6 +32,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: rootfs-alpine
+      - name: update apt
+        run: sudo apt update
       - name: install deps
         run: "sudo apt install -y \
           git ssh make gcc gcc-multilib g++-multilib \
