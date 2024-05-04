@@ -1,0 +1,12 @@
+# Self-Hosted Github Action Runners on AWS via Cirun.io
+# Reference: https://docs.cirun.io/reference/yaml
+runners:
+  - name: "aws-runner"
+    cloud: "aws"
+    region: "us-west-2"
+    instance_type: "m7a.2xlarge"
+    # Ubuntu-24.04, us-west-2
+    machine_image: "ami-0cf2b4e024cdb6960"
+    preemptible: true
+    labels:
+      - "cirun-aws-amd64"
