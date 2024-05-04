@@ -16,6 +16,7 @@ apk add agetty
 apk add shadow
 apk add bash bash-completion
 chsh -s /bin/bash
+echo -e "luckfox\nluckfox" | passwd
 apk del -r shadow
 
 # Install SSH
