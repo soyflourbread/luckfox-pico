@@ -7,6 +7,6 @@ runners:
     instance_type: "m7a.2xlarge"
     # Ubuntu-24.04, 64GB, us-west-2
     machine_image: "ami-04c4dd2e810da6cfe"
-    preemptible: true
+    preemptible: false
     labels:
       - "cirun-aws-amd64"
