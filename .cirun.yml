@@ -5,8 +5,8 @@ runners:
     cloud: "aws"
     region: "us-west-2"
     instance_type: "m7a.2xlarge"
-    # Ubuntu-24.04, us-west-2
-    machine_image: "ami-0cf2b4e024cdb6960"
-    preemptible: false
+    # Ubuntu-24.04, 64GB, us-west-2
+    machine_image: "ami-04c4dd2e810da6cfe"
+    preemptible: true
     labels:
       - "cirun-aws-amd64"
