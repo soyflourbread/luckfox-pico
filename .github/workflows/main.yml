@@ -21,7 +21,8 @@ jobs:
     strategy:
       matrix:
         device: [ pico-mini-b, pico-plus, pico-pro-max ]
-    runs-on: "cirun-aws-amd64--${{ github.run_id }}"
+    # runs-on: "cirun-aws-amd64--${{ github.run_id }}"
+    runs-on: ubuntu-latest
     needs: build-rootfs
     steps:
       - name: checkout
