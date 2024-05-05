@@ -1,12 +1,13 @@
-#!/bin/bash
+#!/bin/ash
 #
 # setup configfs for adbd, usb mass storage and MTP....
 # For kernel v4.4 usb configfs
 #
 # Load default env variables from profiles
+. /etc/profile
 
 UMS_EN=off
-ADB_EN=on
+ADB_EN=off
 MTP_EN=off
 NTB_EN=off
 ACM_EN=off
@@ -56,11 +57,11 @@ function_init()
         test_write 1 ${USB_FUNCTIONS_DIR}/uac2.gs0/p_feature_unit
         mkdir ${USB_FUNCTIONS_DIR}/ffs.adb
         mkdir ${USB_FUNCTIONS_DIR}/ffs.ntb
-        #mkdir ${USB_FUNCTIONS_DIR}/mtp.gs0
+        # mkdir ${USB_FUNCTIONS_DIR}/mtp.gs0
         mkdir ${USB_FUNCTIONS_DIR}/rndis.gs0
-        #write /config/usb_gadget/g1/functions/rndis.gs0/wceis 1
-        #mkdir ${USB_FUNCTIONS_DIR}/acm.gs6
-        #mkdir ${USB_FUNCTIONS_DIR}/mass_storage.0
+        #write /config/10_usb_gadget/g1/functions/rndis.gs0/wceis 1
+        # mkdir ${USB_FUNCTIONS_DIR}/acm.gs6
+        # mkdir ${USB_FUNCTIONS_DIR}/mass_storage.0
         mkdir ${USB_FUNCTIONS_DIR}/uvc.gs6
         mkdir ${USB_FUNCTIONS_DIR}/hid.usb0
 }
@@ -70,7 +71,7 @@ configfs_init()
         echo "Debug: configfs_init"
         mkdir /dev/usb-ffs
 
-        #mount -t configfs none ${CONFIGFS_DIR}
+        # mount -t configfs none ${CONFIGFS_DIR}
         mkdir ${USB_CONFIGFS_DIR} -m 0770
         echo 0x2207 > ${USB_CONFIGFS_DIR}/idVendor
         echo 0x0310 > ${USB_CONFIGFS_DIR}/bcdDevice
@@ -140,46 +141,6 @@ parse_parameter()
 
 parameter_init()
 {
-        if [ $MTP_EN = on ];then
-                make_config_string mtp
-        fi
-
-        if [ $ADB_EN = on ];then
-                make_config_string adb
-        fi
-
-        if [ $UMS_EN = on ];then
-                make_config_string ums
-        fi
-
-        if [ $NTB_EN = on ];then
-                make_config_string ntb
-        fi
-
-        if [ $ACM_EN = on ];then
-                make_config_string acm
-        fi
-
-        if [ $UAC1_EN = on ];then
-                make_config_string uac1
-        fi
-
-        if [ $UAC2_EN = on ];then
-                make_config_string uac2
-        fi
-
-        if [ $UVC_EN = on ];then
-                make_config_string uvc
-        fi
-
-        if [ $RNDIS_EN = on ];then
-                make_config_string rndis
-        fi
-
-        if [ $HID_EN = on ];then
-                make_config_string hid
-        fi
-
         case "$CONFIG_STRING" in
                 ums)
                         PID=0x0000
@@ -363,13 +324,6 @@ run_binary()
         if [ $MTP_EN = on ];then
                 start-stop-daemon --start --quiet --background --exec /usr/bin/mtp-server
         fi
-        if [ $RNDIS_EN = on ];then
-
-        sleep .5
-        ifconfig usb0 172.32.0.70
-        ifconfig usb0 up
-        fi
-
 }
 
 program_kill()
@@ -389,16 +343,6 @@ usb_device_stop()
 case "$1" in
 start)
         ifconfig lo up
-#       if [ ! -e "/tmp/.usb_config" ]; then
-#               echo "$0: Cannot find .usb_config"
-#               # exit 0
-#               USB_CONFIG_FILE=/tmp/.usb_config
-#               echo "usb_adb_en" >> $USB_CONFIG_FILE
-#       fi
-
-#       if [ -e /tmp/.usb_config ]; then
-#               USB_CONFIG_FILE=/tmp/.usb_config
-#       fi
 
         parameter_init
 #       if [ -z $CONFIG_STRING ]; then
