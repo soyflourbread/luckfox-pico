@@ -24,6 +24,7 @@ apk add openssh
 rc-update add sshd default
 
 # Extra stuff
+apk add mtd-utils-ubi
 apk add bottom
 apk add neofetch
 

@@ -1,0 +1,161 @@
+#!/bin/sh
+bootmedium=spi_nand
+linkdev(){
+if [ ! -d "/dev/block/by-name" ];then
+mkdir -p /dev/block/by-name
+cd /dev/block/by-name
+ln -sf /dev/mtd0 env
+ln -sf /dev/mtd1 idblock
+ln -sf /dev/mtd2 uboot
+ln -sf /dev/mtd3 boot
+ln -sf /dev/mtd4 oem
+ln -sf /dev/mtd5 userdata
+ln -sf /dev/mtd6 rootfs
+fi }
+mount_part(){
+if [ -z "$1" -o -z "$2" -o -z "$3" ];then
+        echo "Invalid paramter, exit !!!"
+        exit 1
+fi
+root_dev=$(mountpoint -n /)
+root_dev=${root_dev%% *}
+partname=$1
+part_dev=/dev/block/by-name/$1
+mountpt=$2
+part_fstype=$3
+part_realdev=$(realpath $part_dev)
+if [ ! -d $mountpt ]; then
+        if [ "$mountpt" = "IGNORE" -a "emmc" = "$bootmedium" ];then
+                if [ "$root_dev" = "$part_realdev" ];then
+                        resize2fs $part_dev
+                fi
+                return 0;
+        else
+                echo "${0} info: mount point path [$mountpt] not found, skip..."
+                return 1;
+        fi
+fi
+if test -h $part_dev; then
+case $bootmedium in
+        emmc)
+                if [ "$root_dev" = "$part_realdev" ];then
+                        resize2fs $part_dev
+                else
+                        e2fsck -y $part_dev
+                        mount -t $part_fstype $part_dev $mountpt
+                        if [ $? -eq 0 ]; then
+                                resize2fs $part_dev
+                                tune2fs $part_dev -L $partname
+                        else
+                                echo "mount $partname error, try to format..."
+                                mke2fs -F -L $partname $part_dev  &&                                    tune2fs -c 0 -i 0 $part_dev &&                                     mount -t $part_fstype $part_dev $mountpt
+                        fi
+                fi
+                ;;
+        spi_nand|slc_nand)
+                if [ $partname = "rootfs" ];then
+                        echo "rootfs mount on $root_dev"
+                elif [ "$part_fstype" = "ubifs" ]; then
+                        part_no=$(echo $part_realdev | grep -oE "[0-9]*$")
+                        ubi_dev=/dev/ubi${part_no}
+                        ubi_vol=${ubi_dev}_0
+                        mount | grep $ubi_vol
+                        if [ $? -eq 0 ];then
+                                echo "***********$partname has been mounted***********"
+                        else
+                                if [ ! -e $ubi_vol ];then
+                                        echo "***********$ubi_vol not exist***********"
+                                        if [ ! -e $ubi_dev ];then
+                                                echo "***********$ubi_dev not exist***********"
+                                                ubiattach /dev/ubi_ctrl -m $part_no -d $part_no
+                                                if [ $? -ne 0 ];then
+                                                        echo "ubiattach $part_realdev error, try to format..."
+                                                        ubiformat -y $part_realdev
+                                                        ubiattach /dev/ubi_ctrl -m $part_no -d $part_no
+                                                fi
+                                        fi
+                                        ubi_info_dir=/sys/class/ubi/ubi${part_no}
+                                        avail_eraseblocks=$(cat $ubi_info_dir/avail_eraseblocks)
+                                        eraseblock_size=$(cat $ubi_info_dir/eraseblock_size)
+                                        echo "try to make volume: $ubi_vol ..."
+                                        ubimkvol $ubi_dev -N $partname -s $((avail_eraseblocks*eraseblock_size))
+                                fi
+                                mount -t $part_fstype $ubi_vol $mountpt
+                        fi
+                elif [ "$part_fstype" = "squashfs" ]; then
+                        part_no=$(echo $part_realdev | grep -oE "[0-9]*$")
+                        ubi_dev=/dev/ubi${part_no}
+                        ubi_vol=${ubi_dev}_0
+                        ubi_block=/dev/ubiblock${part_no}_0
+                        mount | grep $ubi_block
+                        if [ $? -eq 0 ];then
+                                echo "***********$partname has been mounted***********"
+                        else
+                                if [ ! -e $ubi_block ];then
+                                        echo "***********$ubi_block not exist***********"
+                                        ubiattach /dev/ubi_ctrl -m $part_no -d $part_no
+                                        if [ $? -ne 0 ];then
+                                                echo "ubiattach $part_realdev error, return !!!"
+                                                echo "Please check the device: $part_realdev"
+                                                return 1
+                                        fi
+                                        ubiblock -c $ubi_vol
+                                fi
+                                mount -t $part_fstype $ubi_block $mountpt
+                        fi
+                elif [ "$part_fstype" = "erofs" ]; then
+                        part_no=$(echo $part_realdev | grep -oE "[0-9]*$")
+                        ubi_dev=/dev/ubi${part_no}
+                        ubi_vol=${ubi_dev}_0
+                        ubi_block=/dev/ubiblock${part_no}_0
+                        mount | grep $ubi_block
+                        if [ $? -eq 0 ];then
+                                echo "***********$partname has been mounted***********"
+                        else
+                                if [ ! -e $ubi_block ];then
+                                        echo "***********$ubi_block not exist***********"
+                                        ubiattach /dev/ubi_ctrl -m $part_no -d $part_no
+                                        if [ $? -ne 0 ];then
+                                                echo "ubiattach $part_realdev error, return !!!"
+                                                echo "Please check the device: $part_realdev"
+                                                return 1
+                                        fi
+                                        ubiblock -c $ubi_vol
+                                fi
+                                mount -t $part_fstype $ubi_block $mountpt
+                        fi
+                else
+                        echo "Error: wrong filesystem type: $part_fstype, return !!!"
+                        return 1
+                fi
+                ;;
+        spi_nor)
+                if [ "$root_dev" = "$part_realdev" ];then
+                        echo "***********$part_dev has been mounted, skipping***********"
+                else
+                        echo "mount -t $part_fstype $part_dev $mountpt"
+                        mount -t $part_fstype $part_dev $mountpt
+                        if [ $? -eq 0 ]; then
+                                echo "***********succeed in mounting***********"
+                        elif [ "$part_fstype" = "jffs2" ]; then
+                                echo "mount $partname error, try to format..."
+                                echo "flash_erase -j ${part_realdev/block/} 0 0 && mount -t $part_fstype $part_dev $mountpt"
+                                flash_erase -j ${part_realdev/block/} 0 0 && mount -t $part_fstype $part_dev $mountpt
+                        else
+                                echo "mount $partname error, skipping! Please check the filesystem."
+                        fi
+                fi
+                ;;
+        *)
+                echo "Invalid Parameter: Check bootmedium !!!"
+                exit 1
+                ;;
+esac
+fi
+}
+case $1 in start) linkdev;
+mount_part rootfs IGNORE ubifs ;
+mount_part oem /oem ubifs ;
+mount_part userdata /userdata ubifs ;
+;; linkdev) linkdev ;
+;; stop) printf stop $0 finished\n ;; *) echo Usage: $0 {start|stop} exit 1 ;; esac
