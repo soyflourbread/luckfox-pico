@@ -53,6 +53,9 @@ overlay() {
   echo "Include /etc/ssh/sshd_config.d/*.conf" >> \
     "$ROOTFS_WORKSPACE_MNT/etc/ssh/sshd_config"
 
+  ln -s "/etc/init.d/link_mount" \
+    "$ROOTFS_WORKSPACE_MNT/etc/runlevels/default/link_mount"
+
   ln -s "/etc/init.d/usb_gadget" \
     "$ROOTFS_WORKSPACE_MNT/etc/runlevels/default/usb_gadget"
 }
