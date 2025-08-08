@@ -1,17 +1,42 @@
 #!/bin/sh
-bootmedium=spi_nand
+eval $(cat /proc/cmdline | grep -o ' storagemedia=[^ ]*')
+bootmedium=$storagemedia
 linkdev(){
-if [ ! -d "/dev/block/by-name" ];then
-mkdir -p /dev/block/by-name
-cd /dev/block/by-name
-ln -sf /dev/mtd0 env
-ln -sf /dev/mtd1 idblock
-ln -sf /dev/mtd2 uboot
-ln -sf /dev/mtd3 boot
-ln -sf /dev/mtd4 oem
-ln -sf /dev/mtd5 userdata
-ln -sf /dev/mtd6 rootfs
-fi }
+   if [ ! -d "/dev/block/by-name" ];then
+      mkdir -p /dev/block/by-name
+      cd /dev/block/by-name
+      case $storagemedia in
+         mtd|spi_nand|slc_nand)
+            ln -sf /dev/mtd0 env
+            ln -sf /dev/mtd1 idblock
+            ln -sf /dev/mtd2 uboot
+            ln -sf /dev/mtd3 boot
+            ln -sf /dev/mtd4 oem
+            ln -sf /dev/mtd5 userdata
+            ln -sf /dev/mtd6 rootfs
+	    ;;
+         sd)
+            ln -sf /dev/mmcblk1p1 env
+            ln -sf /dev/mmcblk1p2 idblock
+            ln -sf /dev/mmcblk1p3 uboot
+            ln -sf /dev/mmcblk1p4 boot
+            ln -sf /dev/mmcblk1p5 oem
+            ln -sf /dev/mmcblk1p6 userdata
+            ln -sf /dev/mmcblk1p7 rootfs
+	    ;;
+         emmc)
+            ln -sf /dev/mmcblk0p1 env
+            ln -sf /dev/mmcblk0p2 idblock
+            ln -sf /dev/mmcblk0p3 uboot
+            ln -sf /dev/mmcblk0p4 boot
+            ln -sf /dev/mmcblk0p5 oem
+            ln -sf /dev/mmcblk0p6 userdata
+            ln -sf /dev/mmcblk0p7 rootfs
+	    ;;
+
+	 esac
+   fi 
+}
 mount_part(){
 if [ -z "$1" -o -z "$2" -o -z "$3" ];then
         echo "Invalid paramter, exit !!!"
@@ -25,8 +50,15 @@ mountpt=$2
 part_fstype=$3
 part_realdev=$(realpath $part_dev)
 if [ ! -d $mountpt ]; then
-        if [ "$mountpt" = "IGNORE" -a "emmc" = "$bootmedium" ];then
+        if [ "$mountpt" = "IGNORE" -a "sd" = "$bootmedium" ];then
                 if [ "$root_dev" = "$part_realdev" ];then
+			mount -o remount,rw /
+                        resize2fs $part_dev
+                fi
+                return 0;
+        elif [ "$mountpt" = "IGNORE" -a "emmc" = "$bootmedium" ];then
+                if [ "$root_dev" = "$part_realdev" ];then
+			mount -o remount,rw /
                         resize2fs $part_dev
                 fi
                 return 0;
@@ -37,6 +69,21 @@ if [ ! -d $mountpt ]; then
 fi
 if test -h $part_dev; then
 case $bootmedium in
+        sd)
+                if [ "$root_dev" = "$part_realdev" ];then
+                        resize2fs $part_dev
+                else
+                        e2fsck -y $part_dev
+                        mount -t $part_fstype $part_dev $mountpt
+                        if [ $? -eq 0 ]; then
+                                resize2fs $part_dev
+                                tune2fs $part_dev -L $partname
+                        else
+                                echo "mount $partname error, try to format..."
+                                mke2fs -F -L $partname $part_dev  &&                                    tune2fs -c 0 -i 0 $part_dev &&                                     mount -t $part_fstype $part_dev $mountpt
+                        fi
+                fi
+                ;;
         emmc)
                 if [ "$root_dev" = "$part_realdev" ];then
                         resize2fs $part_dev
@@ -52,7 +99,7 @@ case $bootmedium in
                         fi
                 fi
                 ;;
-        spi_nand|slc_nand)
+        mtd|spi_nand|slc_nand)
                 if [ $partname = "rootfs" ];then
                         echo "rootfs mount on $root_dev"
                 elif [ "$part_fstype" = "ubifs" ]; then
@@ -153,9 +200,14 @@ case $bootmedium in
 esac
 fi
 }
+case $bootmedium in
+   sd) fstype=ext4 ;;
+   emmc) fstype=ext4 ;;
+   mtd|spi_nand|slc_nand) fstype=ubifs ;;
+esac
 case $1 in start) linkdev;
-mount_part rootfs IGNORE ubifs ;
-mount_part oem /oem ubifs ;
-mount_part userdata /userdata ubifs ;
+mount_part rootfs IGNORE $fstype ;
+mount_part oem /oem $fstype ;
+mount_part userdata /userdata $fstype ;
 ;; linkdev) linkdev ;
 ;; stop) printf stop $0 finished\n ;; *) echo Usage: $0 {start|stop} exit 1 ;; esac

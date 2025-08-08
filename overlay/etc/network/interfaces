@@ -1,10 +1,14 @@
 auto lo
 iface lo inet loopback
 auto eth0
-iface eth0 inet dhcp
-    udhcpc_opts -t 1
+iface eth0 inet static
+    address 192.168.199.100
+    netmask 255.255.255.0
+    up ip route add 192.168.15.0/24 via 192.168.199.59
+    gateway 192.168.199.1
+
 auto usb0
 iface usb0 inet static
     address 172.32.0.93
     netmask 255.255.255.0
-    gateway 172.32.0.1
+ 

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sysctl -p /etc/sysctl.d/*.conf

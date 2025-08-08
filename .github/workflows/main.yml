@@ -20,7 +20,7 @@ jobs:
   build-system:
     strategy:
       matrix:
-        device: [ pico-mini-b, pico-plus, pico-pro-max ]
+        device: [ pico-ultra-flash ]
     # runs-on: "cirun-aws-amd64--${{ github.run_id }}"
     runs-on: ubuntu-latest
     needs: build-rootfs
@@ -44,9 +44,9 @@ jobs:
           python-is-python3 passwd openssl openssh-server \
           openssh-client vim file cpio rsync"
       - name: build system
-        run: ./system.sh -f rootfs-alpine.tar.gz -d ${{ matrix.device }}
+        run: sudo ./system.sh -f rootfs-alpine.tar.gz -d ${{ matrix.device }}
       - name: upload update.img
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.device }}-sysupgrade
-          path: output/${{ matrix.device }}-sysupgrade.img
+          name: ${{ matrix.device }}
+          path: output/*

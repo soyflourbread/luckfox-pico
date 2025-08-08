@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ -f /oem/usr/ko/insmod_ko.sh ]; then
+        chmod a+x /oem/usr/ko/insmod_ko.sh
+        /oem/usr/ko/insmod_ko.sh
+fi
