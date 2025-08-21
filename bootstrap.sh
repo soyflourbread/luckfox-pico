@@ -13,20 +13,14 @@ rc-update add local default
 apk add agetty
 
 # Setting up shell
-apk add shadow
-apk add bash bash-completion
+apk add shadow bash bash-completion --no-cache
 chsh -s /bin/bash
 echo -e "luckfox\nluckfox" | passwd
 apk del -r shadow
 
 # Install SSH
-apk add openssh
-rc-update add sshd default
-
-# Extra stuff
-apk add mtd-utils-ubi
-apk add bottom
-apk add neofetch
+apk add dropbear mtd-utils-ubi bottom fastfetch unudhcpd --no-cache
+rc-update add dropbear default
 
 # Clear apk cache
 rm -rf /var/cache/apk/*

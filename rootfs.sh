@@ -27,6 +27,7 @@ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 # Create docker
 docker container rm -f armv7alpine
 docker run \
+    --platform linux/arm/v7 \
     --name armv7alpine \
     --net host \
     --mount type=bind,source=./bootstrap.sh,target=/bootstrap.sh \
@@ -49,9 +50,6 @@ overlay() {
 
   rsync -a "$OVERLAY_WORKSPACE/" "$ROOTFS_WORKSPACE_MNT/"
   rm -rf "$OVERLAY_WORKSPACE"
-
-  echo "Include /etc/ssh/sshd_config.d/*.conf" >> \
-    "$ROOTFS_WORKSPACE_MNT/etc/ssh/sshd_config"
 
   ln -s "/etc/init.d/00_link_mount" \
     "$ROOTFS_WORKSPACE_MNT/etc/runlevels/default/00_link_mount"

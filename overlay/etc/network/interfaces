@@ -5,6 +5,6 @@ iface eth0 inet dhcp
     udhcpc_opts -t 1
 auto usb0
 iface usb0 inet static
-    address 172.32.0.93
+    address 172.16.42.1
     netmask 255.255.255.0
-    gateway 172.32.0.1
+    gateway 172.16.42.2

@@ -1,0 +1,8 @@
+{
+    "name": "Luckfox Pico Alpine DevContainer",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    },
+    "containerUser": "ubuntu"
+}

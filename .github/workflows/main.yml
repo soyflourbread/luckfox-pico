@@ -21,16 +21,15 @@ jobs:
     strategy:
       matrix:
         device: [ pico-mini-b, pico-plus, pico-pro-max ]
-    # runs-on: "cirun-aws-amd64--${{ github.run_id }}"
     runs-on: ubuntu-latest
     needs: build-rootfs
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: "recursive"
       - name: download rootfs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: rootfs-alpine
       - name: update apt

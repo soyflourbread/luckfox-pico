@@ -1,3 +1,11 @@
 #!/sbin/openrc-run
 
-command="/usr/bin/usb_gadget start || true"
+start() {
+    /usr/bin/usb_gadget start || true
+    /usr/bin/unudhcpd -i usb0 -s 172.16.42.1 -c 172.16.42.2 &
+}
+
+stop() {
+    # dont
+    true
+}
