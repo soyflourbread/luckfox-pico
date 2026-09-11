@@ -27,6 +27,11 @@ rc-update add sshd default
 apk add mtd-utils-ubi
 apk add bottom
 apk add neofetch
+apk add wget
+apk add nano
+apk add mc
+apk add chrony
+apk add usbutils
 
 # Clear apk cache
 rm -rf /var/cache/apk/*
@@ -34,3 +39,7 @@ rm -rf /var/cache/apk/*
 # Packaging rootfs
 for d in bin etc lib sbin usr; do tar c "$d" | tar x -C /extrootfs; done
 for dir in dev proc root run sys var oem userdata; do mkdir /extrootfs/${dir}; done
+mkdir -p /extrootfs/var/empty
+chown root:root /extrootfs/var/empty
+chmod 755 /extrootfs/var/empty
+mkdir -p -m 1777 /tmp

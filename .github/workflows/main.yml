@@ -1,52 +1,83 @@
-name: ci
+name: Build Alpine Image
+
+permissions:
+  contents: write
+
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - "main"
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  UPLOAD_FIRMWARE: true
+  UPLOAD_RELEASE: true
+  TZ: Asia/Tashkent
+
+
 jobs:
   build-rootfs:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: build rootfs
+
+      - name: Build Alpine rootfs
         run: sudo ./rootfs.sh
-      - name: upload rootfs
+
+      - name: Upload rootfs artifact
         uses: actions/upload-artifact@v4
         with:
           name: rootfs-alpine
           path: output/rootfs-alpine.tar.gz
+
   build-system:
     strategy:
       matrix:
-        device: [ pico-mini-b, pico-plus, pico-pro-max ]
-    # runs-on: "cirun-aws-amd64--${{ github.run_id }}"
+        device:
+          - pico-mini-b
     runs-on: ubuntu-latest
     needs: build-rootfs
     steps:
-      - name: checkout
+      - name: Checkout code & submodules
         uses: actions/checkout@v4
         with:
           submodules: "recursive"
-      - name: download rootfs
+      
+      - name: Download built rootfs
         uses: actions/download-artifact@v4
         with:
           name: rootfs-alpine
-      - name: update apt
-        run: sudo apt update
-      - name: install deps
-        run: "sudo apt install -y \
-          git ssh make gcc gcc-multilib g++-multilib \
-          module-assistant expect g++ gawk texinfo libssl-dev \
-          bison flex fakeroot cmake unzip gperf autoconf \
-          device-tree-compiler libncurses5-dev pkg-config bc \
-          python-is-python3 passwd openssl openssh-server \
-          openssh-client vim file cpio rsync"
-      - name: build system
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git ssh make gcc gcc-multilib g++-multilib module-assistant expect g++ gawk texinfo libssl-dev bison flex fakeroot cmake unzip gperf autoconf device-tree-compiler libncurses5-dev pkg-config bc python-is-python3 passwd openssl openssh-server openssh-client vim file cpio rsync
+      
+      - name: Build final sysupgrade.img
         run: ./system.sh -f rootfs-alpine.tar.gz -d ${{ matrix.device }}
-      - name: upload update.img
+      
+      - name: Upload finished sysupgrade image
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.device }}-sysupgrade
-          path: output/${{ matrix.device }}-sysupgrade.img
+          path: output/*.img
+          if-no-files-found: error
+          
+      - name: Generate release tag
+        id: vars
+        run: echo "tag=build-$(date +'%Y%m%d-%H%M%S')-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload firmware to release
+        if: ${{ env.UPLOAD_RELEASE == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: "Firmware ${{ steps.vars.outputs.tag }}"
+          body: |
+            Alpine Linux firmware
+
+            Device: ${{ matrix.device }}
+            Commit: ${{ github.sha }}
+          make_latest: true
+          files: |
+            output/*.img

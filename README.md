@@ -19,9 +19,17 @@ for instructions on flashing `update.img` to your Pico board.
 
 For example, to flash Pico Pro Max boards,
 connect the board to your computer while pressing _BOOT_ key, then execute
+
+Linux:
 ```bash
 sudo ./upgrade_tool uf pico-pro-max-sysupgrade.img
 ```
+
+Windows:
+```bash
+./upgrade_tool.exe uf pico-pro-max-sysupgrade.img
+```
+
 
 ## Setting Up
 

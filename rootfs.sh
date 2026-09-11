@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -eo pipefail
 OUTPUT_DIR="output"
 ROOTFS_FILE="rootfs-alpine.tar.gz"
 
@@ -28,6 +29,7 @@ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 docker container rm -f armv7alpine
 docker run \
     --name armv7alpine \
+    --platform linux/arm/v7 \
     --net host \
     --mount type=bind,source=./bootstrap.sh,target=/bootstrap.sh \
     -v "$ROOTFS_WORKSPACE_MNT:/extrootfs" \
